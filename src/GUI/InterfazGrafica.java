@@ -15,13 +15,14 @@ public class InterfazGrafica extends JFrame {
 	
 	private BackgroundPrograma programa;
 	private JTextField tfDisplay;
-	private JPanel pnOperacion, pnNuevoNodo, pnNodoDefinido;
+	private JPanel pnOperacion, pnNuevoNodo, pnNodoDefinido, pnDatos;
 	private JComboBox<String> cbAction;
-	private JLabel lbNuevoRotulo, lbNuevoValor, lbRotuloDeNodoDefinido, lbValorDeNodoDefinido;
+	private JLabel lbNuevoRotulo, lbNuevoValor, lbRotuloDeNodoDefinido, lbValorDeNodoDefinido, lbTamañoDelArbol;
 	private JTextField tfNuevoRotulo, tfNuevoValor, tfRotuloDeNodoDefinido, tfValorDeNodoDefinido;
 	private JButton btnIngresarValores;
 	private boolean seCreoArbol;
 	private boolean seCreoRaiz;
+	private int tamañoDelArbol;
 	
 	public InterfazGrafica() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -32,16 +33,18 @@ public class InterfazGrafica extends JFrame {
 		
 		this.seCreoArbol = false;
 		this.seCreoRaiz = false;
+		this.tamañoDelArbol = 0;
 		this.programa = new BackgroundPrograma();
 //		this.armarContenedores();
 		this.armarComboBox();
 		this.armarPanelIngresarValores();
+		this.armarPanelDatos();
 	}
 	
 	private void armarPanelIngresarValores() {
 		pnOperacion = new JPanel();
 		pnOperacion.setLayout(null);
-		pnOperacion.setBounds( 8, 40,252,304);
+		pnOperacion.setBounds( 8, 40,252,296);
 		pnOperacion.setBorder(BorderFactory.createTitledBorder("Ingresa valores"));
 		getContentPane().add(pnOperacion);
 		
@@ -51,89 +54,8 @@ public class InterfazGrafica extends JFrame {
 		btnIngresarValores = new JButton("Crear árbol");
 		btnIngresarValores.setBounds( 10, 260, 232, 24);
 		btnIngresarValores.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		btnIngresarValores.addActionListener( new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				if(!seCreoArbol) {
-					//Se crea el arbol y cambia a true al booleano
-					seCreoArbol = programa.crearArbol();
-					
-					//Lanzo una ventana emergente de exito
-					crearVentanaEmergenteExitosa("¡Se creo el árbol de forma exitosa!");
-					//Establezco editables los textField
-					tfNuevoRotulo.setEditable(true);
-					tfNuevoValor.setEditable(true);
-					//Altero el texto del boton
-					btnIngresarValores.setText("Ingresar valores");
-					//Establezco a la segunda opcion del combo box para crear raiz
-					cbAction.setSelectedIndex(1);
-					
-				} else {
-					//Obtener el indice de la opcion seleccionada en el combobox
-					int intComboBox = cbAction.getSelectedIndex();
-					//Si no se creo la raiz y el combobox no esta en la opcion 2 "Crear nodo"
-					if(!seCreoRaiz && intComboBox == 1) {
-						//Obtener los strings de los JTextField
-						String sRotuloIngresado = tfNuevoRotulo.getText();
-						String sValorIngresado = tfNuevoValor.getText();
-						int intValorIngresado = Integer.parseInt(sValorIngresado);
-						
-						try {
-							seCreoRaiz = programa.crearRaiz(sRotuloIngresado, intValorIngresado);
-						} catch (InvalidOperationException e1) {
-							crearVentanaEmergenteFallida("Hubo un error al crear la raiz");
-						}
-						
-						if(seCreoRaiz) {
-							//Lanzo mensaje de exito
-							crearVentanaEmergenteExitosa("<html>¡Se creo el nodo raiz del arbol de forma exitosa!"+
-									"<p>* Rotulo de la raiz: "+sRotuloIngresado+"<p>* Valor de la raiz: "+intValorIngresado+"</html>");
-							
-							//Limpio los JTextField
-							limpiarInputs();
-							
-							//Establezco editables a los textField de nodo ingresado
-							tfRotuloDeNodoDefinido.setEditable(true);
-							tfValorDeNodoDefinido.setEditable(true);
-							
-							//Establezco un nuevo titulo para el borde del pane del nuevo nodo
-							pnNuevoNodo.setBorder(BorderFactory.createTitledBorder("Crear nuevo nodo"));
-							
-						}
-					} else {
-						boolean seCompleto = false;
-						
-						String sRotuloIngresado = tfNuevoRotulo.getText();
-						String sValorIngresado = tfNuevoValor.getText();
-						int intValorIngresado = Integer.parseInt(sValorIngresado);
-						
-						String sRotuloDeNodoDefinido = tfRotuloDeNodoDefinido.getText();
-						String sValorDeNodoDefinido = tfValorDeNodoDefinido.getText();
-						int intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
-						
-						if( intComboBox == 1 ) {
-							try {
-								seCompleto = programa.agregarNodo(sRotuloIngresado, intValorIngresado, sRotuloDeNodoDefinido, intValorDeNodoDefinido);
-							} catch (InvalidPositionException | GInvalidOperationException e1) {
-								crearVentanaEmergenteFallida(e1.getMessage());
-							} 
-							if(seCompleto) {
-								crearVentanaEmergenteExitosa("<html>"
-										+ "Se añadio un nuevo hijo al nodo ( "+sRotuloDeNodoDefinido+", "+intValorDeNodoDefinido+")"
-												+ "<p>* Rotulo de la raiz: "+sRotuloIngresado+"<p>* Valor de la raiz: "+intValorIngresado+"</html>");
-							}
-						}
-						
-						limpiarInputs();
-					}
-					
-					
-					
-					
-				}
-				
-			}
-		});
+
+		this.armarOyenteBoton();
 		
 		pnOperacion.add(btnIngresarValores);
 	}
@@ -202,6 +124,21 @@ public class InterfazGrafica extends JFrame {
 		pnNodoDefinido.add(tfValorDeNodoDefinido);
 	}
 	
+	private void armarPanelDatos() {
+		pnDatos = new JPanel();
+		pnDatos.setBounds( 8, 340, 252, 96);
+		pnDatos.setBorder(BorderFactory.createTitledBorder("Panel de datos"));
+		pnDatos.setLayout(null);
+		getContentPane().add(pnDatos);
+		
+		lbTamañoDelArbol = new JLabel("Tamaño del arbol: ");
+		lbTamañoDelArbol.setBounds( 8, 16, 236, 20);
+		lbTamañoDelArbol.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lbTamañoDelArbol.setVisible(false);
+		
+		pnDatos.add(lbTamañoDelArbol);
+	}
+	
 	private void armarComboBox() {
 		cbAction = new JComboBox<String>();
 		cbAction.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -220,6 +157,100 @@ public class InterfazGrafica extends JFrame {
 		cbAction.addItem("10- Eliminar nodos grado k");
 		cbAction.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		
+		this.armarOyenteComboBox();
+		
+		getContentPane().add(cbAction);
+	}
+	
+	
+	private void armarOyenteBoton() {
+		btnIngresarValores.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				if(!seCreoArbol) {
+					//Se crea el arbol y cambia a true al booleano
+					seCreoArbol = programa.crearArbol();
+					
+					//Lanzo una ventana emergente de exito
+					crearVentanaEmergenteExitosa("¡Se creo el árbol de forma exitosa!");
+					//Establezco editables los textField
+					tfNuevoRotulo.setEditable(true);
+					tfNuevoValor.setEditable(true);
+					//Altero el texto del boton
+					btnIngresarValores.setText("Ingresar valores");
+					//Establezco a la segunda opcion del combo box para crear raiz
+					cbAction.setSelectedIndex(1);
+					
+					lbTamañoDelArbol.setVisible(true);
+					
+				} else {
+					//Obtener el indice de la opcion seleccionada en el combobox
+					int intComboBox = cbAction.getSelectedIndex();
+					//Si no se creo la raiz y el combobox no esta en la opcion 2 "Crear nodo"
+					if(!seCreoRaiz && intComboBox == 1) {
+						//Obtener los strings de los JTextField
+						String sRotuloIngresado = tfNuevoRotulo.getText();
+						String sValorIngresado = tfNuevoValor.getText();
+						int intValorIngresado = Integer.parseInt(sValorIngresado);
+						
+						try {
+							seCreoRaiz = programa.crearRaiz(sRotuloIngresado, intValorIngresado);
+						} catch (InvalidOperationException e1) {
+							crearVentanaEmergenteFallida("Hubo un error al crear la raiz");
+						}
+						
+						if(seCreoRaiz) {
+							//Lanzo mensaje de exito
+							crearVentanaEmergenteExitosa("<html>¡Se creo el nodo raiz del arbol de forma exitosa!"+
+									"<p>* Rotulo de la raiz: "+sRotuloIngresado+"<p>* Valor de la raiz: "+intValorIngresado+"</html>");
+							
+							//Limpio los JTextField
+							limpiarInputs();
+							
+							//Establezco editables a los textField de nodo ingresado
+							tfRotuloDeNodoDefinido.setEditable(true);
+							tfValorDeNodoDefinido.setEditable(true);
+							
+							//Establezco un nuevo titulo para el borde del pane del nuevo nodo
+							pnNuevoNodo.setBorder(BorderFactory.createTitledBorder("Crear nuevo nodo"));
+							
+							
+						}
+					} else {
+						boolean seCompleto = false;
+						
+						String sRotuloIngresado = tfNuevoRotulo.getText();
+						String sValorIngresado = tfNuevoValor.getText();
+						int intValorIngresado = Integer.parseInt(sValorIngresado);
+						
+						String sRotuloDeNodoDefinido = tfRotuloDeNodoDefinido.getText();
+						String sValorDeNodoDefinido = tfValorDeNodoDefinido.getText();
+						int intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
+						
+						if( intComboBox == 1 ) {
+							try {
+								seCompleto = programa.agregarNodo(sRotuloIngresado, intValorIngresado, sRotuloDeNodoDefinido, intValorDeNodoDefinido);
+							} catch (InvalidPositionException | GInvalidOperationException e1) {
+								crearVentanaEmergenteFallida(e1.getMessage());
+							} 
+							if(seCompleto) {
+								crearVentanaEmergenteExitosa("<html>"
+										+ "Se añadio un nuevo hijo al nodo ( "+sRotuloDeNodoDefinido+", "+intValorDeNodoDefinido+")"
+												+ "<p>* Rotulo de la raiz: "+sRotuloIngresado+"<p>* Valor de la raiz: "+intValorIngresado+"</html>");
+							}
+						}
+						
+						limpiarInputs();
+					}
+					
+				}
+				//Luego de cualquier accion -> actualizo el panel de datos
+				actualizarPanelDatos();
+			}
+		});
+	}
+	
+	private void armarOyenteComboBox() {
 		cbAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				/* Numero de la opcion coincide con el indice de la combo box
@@ -263,15 +294,59 @@ public class InterfazGrafica extends JFrame {
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(true);
 						tfValorDeNodoDefinido.setEditable(true);
+					} else if(indexComboBox == 3) {
+						limpiarInputs();
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(true);
+						tfValorDeNodoDefinido.setEditable(true);
+					} else if(indexComboBox == 4) {
+						limpiarInputs();
+						
+						btnIngresarValores.setText("Obtener grado del árbol ...");
+						
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
+					} else if(indexComboBox == 5) {
+						limpiarInputs();
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
+					} else if(indexComboBox == 6) {
+						limpiarInputs();
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
+					} else if(indexComboBox == 7) {
+						limpiarInputs();
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
+					} else if(indexComboBox == 8) {
+						limpiarInputs();
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
+					} else if(indexComboBox == 9) {
+						limpiarInputs();
+						tfNuevoRotulo.setEditable(false);
+						tfNuevoValor.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
 					}
 				}
 				
 				
 			}
 		});
-		
-		getContentPane().add(cbAction);
 	}
+	
 	
 	private void crearVentanaEmergenteExitosa(String mensaje) {
 		JOptionPane.showMessageDialog(null, mensaje, "Operacion exitosa", JOptionPane.INFORMATION_MESSAGE);
@@ -286,6 +361,10 @@ public class InterfazGrafica extends JFrame {
 		tfNuevoValor.setText(null);
 		tfRotuloDeNodoDefinido.setText(null);
 		tfValorDeNodoDefinido.setText(null);
+	}
+	
+	private void actualizarPanelDatos() {
+		lbTamañoDelArbol.setText("Tamaño del arbol: "+this.programa.obtenerTamañoDelArbol());
 	}
 	
 	public static void main (String [] args) {
