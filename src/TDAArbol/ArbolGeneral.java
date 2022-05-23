@@ -76,10 +76,17 @@ public class ArbolGeneral <E> implements Tree <E> {
 		if( this.raiz == null) {
 			throw new InvalidPositionException("El arbol esta vacio");
 		}
+		
 		TNodo<E> nodo = this.checkPosition(v);
-		E elementToReturn = nodo.element();
-		nodo.setElement(e);
-		return elementToReturn;
+		
+		boolean pertenece = this.perteneceAlArbol(nodo);
+		if(!pertenece) {
+			throw new InvalidPositionException("La posicion v no fue encontrada en el árbol");
+		} else {
+			E elementToReturn = nodo.element();
+			nodo.setElement(e);
+			return elementToReturn;
+		}
 	}
 	
 	/**
@@ -190,11 +197,20 @@ public class ArbolGeneral <E> implements Tree <E> {
 		if( this.raiz == null ) {
 			throw new InvalidPositionException("Arbol vacio");
 		}
-		TNodo<E> nodo = this.checkPosition(p);
-		TNodo<E> nuevo = new TNodo<E>( e, nodo);
-		nodo.getHijos().addFirst(nuevo);
-		this.tamaño++;
-		return nuevo;
+		
+		TNodo<E> ancester = this.checkPosition(p);
+		
+		boolean perteneceAlArbol = this.perteneceAlArbol(ancester);
+		
+		//Verifica si el nodo creado a partir de p pertenece al arbol
+		if (!perteneceAlArbol) {
+			throw new InvalidPositionException("p no pertenece al árbol");
+		} else {
+			TNodo<E> nuevo = new TNodo<E>( e, ancester);
+			ancester.getHijos().addFirst(nuevo);
+			this.tamaño++;
+			return nuevo;
+		}
 	}
 	
 	/**
@@ -208,11 +224,20 @@ public class ArbolGeneral <E> implements Tree <E> {
 		if( this.raiz == null ) {
 			throw new InvalidPositionException("Arbol vacio");
 		}
-		TNodo<E> nodo = this.checkPosition(p);
-		TNodo<E> nuevo = new TNodo<E>( e, nodo);
-		nodo.getHijos().addLast(nuevo);
-		this.tamaño++;
-		return nuevo;
+		
+		TNodo<E> ancester = this.checkPosition(p);
+		
+		boolean perteneceAlArbol = this.perteneceAlArbol(ancester);
+		
+		
+		if (!perteneceAlArbol) {
+			throw new InvalidPositionException("p no pertenece al árbol");
+		} else {
+			TNodo<E> nuevo = new TNodo<E>( e, ancester);
+			ancester.getHijos().addLast(nuevo);
+			this.tamaño++;
+			return nuevo;
+		}
 	}
 	
 	/**
@@ -230,28 +255,35 @@ public class ArbolGeneral <E> implements Tree <E> {
 		}
 		
 		TNodo<E> ancester = this.checkPosition(p);
-		TNodo<E> hermanoDerecho = this.checkPosition(rb);
 		
-		boolean encontre = false;
-		Iterator<Position<TNodo<E>>> it = ancester.getHijos().positions().iterator();
-		Position<TNodo<E>> posActual = it.hasNext() ? it.next() : null;
+		boolean pertenece = this.perteneceAlArbol(ancester);
 		
-		while( posActual != null && !encontre ) {
-			if( posActual.element() == hermanoDerecho ) {
-				encontre = true;
-			} else {
-				posActual = it.hasNext() ? it.next() : null;
-			}
-		}
-		
-		if (!encontre) {
-			throw new InvalidPositionException("lb no es hijo de p");
+		if(!pertenece) {
+			throw new InvalidPositionException("p no pertenece al arbol");
 		} else {
-			Position<TNodo<E>> posOfRb = posActual;
-			TNodo<E> nuevo = new TNodo<E>( e, ancester);
-			ancester.getHijos().addBefore(posOfRb, nuevo);
-			this.tamaño++;
-			return nuevo;
+			TNodo<E> hermanoDerecho = this.checkPosition(rb);
+			
+			boolean encontre = false;
+			Iterator<Position<TNodo<E>>> it = ancester.getHijos().positions().iterator();
+			Position<TNodo<E>> posActual = it.hasNext() ? it.next() : null;
+			
+			while( posActual != null && !encontre ) {
+				if( posActual.element() == hermanoDerecho ) {
+					encontre = true;
+				} else {
+					posActual = it.hasNext() ? it.next() : null;
+				}
+			}
+			
+			if (!encontre) {
+				throw new InvalidPositionException("lb no es hijo de p");
+			} else {
+				Position<TNodo<E>> posOfRb = posActual;
+				TNodo<E> nuevo = new TNodo<E>( e, ancester);
+				ancester.getHijos().addBefore(posOfRb, nuevo);
+				this.tamaño++;
+				return nuevo;
+			}
 		}
 	}
 	
@@ -270,28 +302,34 @@ public class ArbolGeneral <E> implements Tree <E> {
 		}
 		
 		TNodo<E> ancester = this.checkPosition(p);
-		TNodo<E> hermanoDerecho = this.checkPosition(lb);
 		
-		boolean encontre = false;
-		Iterator<Position<TNodo<E>>> it = ancester.getHijos().positions().iterator();
-		Position<TNodo<E>> posActual = it.hasNext() ? it.next() : null;
-		
-		while( posActual != null && !encontre ) {
-			if( posActual.element() == hermanoDerecho ) {
-				encontre = true;
-			} else {
-				posActual = it.hasNext() ? it.next() : null;
-			}
-		}
-		
-		if (!encontre) {
-			throw new InvalidPositionException("lb no es hijo de p");
+		boolean perteneceAlArbol = this.perteneceAlArbol(ancester);
+		if(!perteneceAlArbol) {
+			throw new InvalidPositionException("No se encontro p en el arbol");
 		} else {
-			Position<TNodo<E>> posOfLb = posActual;
-			TNodo<E> nuevo = new TNodo<E>( e, ancester);
-			ancester.getHijos().addAfter(posOfLb, nuevo);
-			this.tamaño++;
-			return nuevo;
+			TNodo<E> hermanoDerecho = this.checkPosition(lb);
+			
+			boolean encontre = false;
+			Iterator<Position<TNodo<E>>> it = ancester.getHijos().positions().iterator();
+			Position<TNodo<E>> posActual = it.hasNext() ? it.next() : null;
+			
+			while( posActual != null && !encontre ) {
+				if( posActual.element() == hermanoDerecho ) {
+					encontre = true;
+				} else {
+					posActual = it.hasNext() ? it.next() : null;
+				}
+			}
+			
+			if (!encontre) {
+				throw new InvalidPositionException("lb no es hijo de p");
+			} else {
+				Position<TNodo<E>> posOfLb = posActual;
+				TNodo<E> nuevo = new TNodo<E>( e, ancester);
+				ancester.getHijos().addAfter(posOfLb, nuevo);
+				this.tamaño++;
+				return nuevo;
+			}
 		}
 	}
 
@@ -532,5 +570,66 @@ public class ArbolGeneral <E> implements Tree <E> {
 		for( TNodo<E> h : v.getHijos() ) {
 			pre( h, list );
 		}
+	}
+	
+	public void insertarHijoAltura(int alt, E rotulo) {
+
+		for (Position<E> pos : positions())
+			if (altura(pos) == alt) {
+				try {
+					addLastChild(pos, rotulo);
+				} catch (InvalidPositionException e) {
+					e.printStackTrace();
+				}
+
+			}
+
+	}
+
+	private int altura(Position<E> v) {
+		int salida = 0;
+		try {
+			if (isExternal(v))
+				salida = 0;
+			else {
+				int h = 0;
+				for (Position<E> w : children(v))
+					h = Math.max(h, altura(w));
+				salida = 1 + h;
+			}
+		} catch (InvalidPositionException e) {
+			e.printStackTrace();
+		}
+		return salida;
+	}
+	
+	/**
+	 * Verifica si un nodo pertenece al arbol
+	 * @param p Nodo a verificar
+	 * @return verdadero si el nodo que pasa por parametro pertenece al arbol, false en caso contrario.
+	 */
+	private boolean perteneceAlArbol(TNodo<E> p) {
+		boolean pertenece = false;
+				
+		if( this.raiz == null) {
+			pertenece = false;
+		} else {
+			Iterable<Position<E>> positions = this.positions();
+			Iterator<Position<E>> it = positions.iterator();
+			Position<E> posActual = it.hasNext() ? it.next() : null;
+			TNodo<E> nodoActual = null;
+			while( posActual != null && !pertenece) {
+				try {
+					nodoActual = this.checkPosition(posActual);
+				} catch (InvalidPositionException e) {}
+				if( nodoActual.equals(p)) {
+					pertenece = true;
+				} else {
+					posActual = it.hasNext() ? it.next() : null;
+				}
+			}
+		}
+		
+		return pertenece;
 	}
 }
