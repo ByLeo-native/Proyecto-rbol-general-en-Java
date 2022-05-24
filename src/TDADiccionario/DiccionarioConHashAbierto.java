@@ -119,7 +119,7 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 		if (key == null) {
 			throw new InvalidKeyException("Clave invalida");
 		} else {
-			return ((Integer)key) % N;
+			return key.hashCode() % N;
 		}
 	}
 	
