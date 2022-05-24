@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 import Excepciones.GInvalidOperationException;
 import Excepciones.InvalidOperationException;
@@ -14,7 +16,6 @@ import Excepciones.InvalidPositionException;
 public class InterfazGrafica extends JFrame {
 	
 	private BackgroundPrograma programa;
-	private JTextField tfDisplay;
 	private JPanel pnOperacion, pnNuevoNodo, pnNodoDefinido, pnDatos;
 	private JComboBox<String> cbAction;
 	private JLabel lbNuevoRotulo, lbNuevoValor, lbRotuloDeNodoDefinido, lbValorDeNodoDefinido, lbTamañoDelArbol;
@@ -23,6 +24,7 @@ public class InterfazGrafica extends JFrame {
 	private boolean seCreoArbol;
 	private boolean seCreoRaiz;
 	private int tamañoDelArbol;
+	private JTree tArbol;
 	
 	public InterfazGrafica() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -133,7 +135,7 @@ public class InterfazGrafica extends JFrame {
 		
 		lbTamañoDelArbol = new JLabel("Tamaño del arbol: ");
 		lbTamañoDelArbol.setBounds( 8, 16, 236, 20);
-		lbTamañoDelArbol.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		lbTamañoDelArbol.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		lbTamañoDelArbol.setVisible(false);
 		
 		pnDatos.add(lbTamañoDelArbol);
@@ -214,20 +216,34 @@ public class InterfazGrafica extends JFrame {
 							//Establezco un nuevo titulo para el borde del pane del nuevo nodo
 							pnNuevoNodo.setBorder(BorderFactory.createTitledBorder("Crear nuevo nodo"));
 							
-							
+							armarJTree(programa.rotuloDeLaRaiz(), programa.valorDeLaRaiz());
 						}
 					} else {
+						/* Numero de la opcion coincide con el indice de la combo box
+						 * 0- Crear árbol
+						 * 1- Agregar nodo
+						 * 2- Eliminar nodo
+						 * 3- Obtener grados
+						 * 4- Obtener grado del árbol
+						 * 5- Obtener camino
+						 * 6- Mostrar recorrido pre-orden
+						 * 7- Mostrar recorrido por niveles
+						 * 8- Mostrar recorrido post-orden
+						 * 9- Eliminar nodos grado k
+						 */
 						boolean seCompleto = false;
-						
-						String sRotuloIngresado = tfNuevoRotulo.getText();
-						String sValorIngresado = tfNuevoValor.getText();
-						int intValorIngresado = Integer.parseInt(sValorIngresado);
-						
+						//Para todas las opciones requiero los valores de algun nodo definido
 						String sRotuloDeNodoDefinido = tfRotuloDeNodoDefinido.getText();
 						String sValorDeNodoDefinido = tfValorDeNodoDefinido.getText();
 						int intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
 						
+						//Añadir nodo
 						if( intComboBox == 1 ) {
+							//Para añadir un nuevo nodo debo obtener datos del panel de nuevo nodo
+							String sRotuloIngresado = tfNuevoRotulo.getText();
+							String sValorIngresado = tfNuevoValor.getText();
+							int intValorIngresado = Integer.parseInt(sValorIngresado);
+							
 							try {
 								seCompleto = programa.agregarNodo(sRotuloIngresado, intValorIngresado, sRotuloDeNodoDefinido, intValorDeNodoDefinido);
 							} catch (InvalidPositionException | GInvalidOperationException e1) {
@@ -237,6 +253,16 @@ public class InterfazGrafica extends JFrame {
 								crearVentanaEmergenteExitosa("<html>"
 										+ "Se añadio un nuevo hijo al nodo ( "+sRotuloDeNodoDefinido+", "+intValorDeNodoDefinido+")"
 												+ "<p>* Rotulo de la raiz: "+sRotuloIngresado+"<p>* Valor de la raiz: "+intValorIngresado+"</html>");
+							}
+						} else if( intComboBox == 2 ) { //Eliminar nodo
+							
+							try {
+								seCompleto = programa.eliminarNodo(sRotuloDeNodoDefinido, intValorDeNodoDefinido);
+							} catch (InvalidPositionException error) {
+								crearVentanaEmergenteFallida(error.getMessage());
+							}
+							if(seCompleto) {
+								crearVentanaEmergenteExitosa("<html>¡Se elimino el nodo ( "+sRotuloDeNodoDefinido+", "+intValorDeNodoDefinido+") del arbol!</html>");
 							}
 						}
 						
@@ -356,6 +382,17 @@ public class InterfazGrafica extends JFrame {
 		JOptionPane.showMessageDialog(null, mensaje, "Operacion fallida", JOptionPane.ERROR_MESSAGE);
 	}
 	
+	private void armarJTree(String rotulo, int valor) {
+		DefaultMutableTreeNode raiz = new DefaultMutableTreeNode("( "+rotulo+", "+valor+")");
+		DefaultTreeModel modelo = new DefaultTreeModel(raiz);
+	
+		tArbol = new JTree(modelo);
+		tArbol.setBounds( 300, 16, 150, 300);
+		tArbol.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		
+		getContentPane().add(tArbol);
+	}
+	
 	private void limpiarInputs() {
 		tfNuevoRotulo.setText(null);
 		tfNuevoValor.setText(null);
@@ -364,7 +401,8 @@ public class InterfazGrafica extends JFrame {
 	}
 	
 	private void actualizarPanelDatos() {
-		lbTamañoDelArbol.setText("Tamaño del arbol: "+this.programa.obtenerTamañoDelArbol());
+		this.tamañoDelArbol = this.programa.obtenerTamañoDelArbol();
+		lbTamañoDelArbol.setText("Tamaño del arbol: "+this.tamañoDelArbol);
 	}
 	
 	public static void main (String [] args) {

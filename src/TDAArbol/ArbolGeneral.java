@@ -615,9 +615,6 @@ public class ArbolGeneral <E> implements Tree <E> {
 		return profundidad;
 	}
 	
-	public PositionList<E> recorridoPostorden() {
-		
-	}
 	
 	/**
 	 * Verifica si un nodo pertenece al arbol
