@@ -10,13 +10,10 @@ import Excepciones.InvalidKeyException;
 import Excepciones.InvalidOperationException;
 import Excepciones.InvalidPositionException;
 import TDAArbol.ArbolGeneral;
-import TDAArbol.TNodo;
 import TDAArbol.Tree;
 import TDADiccionario.DiccionarioConHashAbierto;
 import TDADiccionario.Dictionary;
-import TDALista.ListaDoblementeEnlazada;
 import TDALista.Position;
-import TDALista.PositionList;
 import TDAMapeo.Entrada;
 import TDAMapeo.Entry;
 
@@ -28,7 +25,8 @@ public class BackgroundPrograma {
 	//Diccionario que almacena la cantidad de hijos y el rotulo de un nodo
 	private Dictionary<String, Integer> diccionarioDeGrados;
 	private int ordenDelArbol;
-	
+	private String rotuloDelNodoConMasDescendiente;
+		
 	public BackgroundPrograma () {
 		this.seCreoArbol = false;
 		this.arbolGeneral = null;
@@ -56,10 +54,8 @@ public class BackgroundPrograma {
 		
 		try {
 			this.diccionarioDeGrados.insert( rotuloDeLaRaiz, 0);
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			this.rotuloDelNodoConMasDescendiente = rotuloDeLaRaiz;
+		} catch (InvalidKeyException e) {}
 		
 		return seEjecutoCompleto ;
 	}
@@ -91,20 +87,26 @@ public class BackgroundPrograma {
 				
 				Entry<String,Integer> entrada = null;
 				try {
+					//Agrego al nuevo nodo con cero descendientes
+					this.diccionarioDeGrados.insert(rotuloDeNuevoNodo, 0);
+					
 					entrada = this.diccionarioDeGrados.find(rotuloDelNodoAncestro);
 				
 					//Si no encuentra la clave en el diccionario, la agrega con cantidad de hijos igual a 0
 					if( entrada == null ) {
-							this.diccionarioDeGrados.insert(rotuloDelNodoAncestro, 0);
+						System.out.println("Esto es raro");
 					} else {
 						//Si encontro la clave en el diccionario
 						//Obtengo la cantidad de hijos actual de la entrada ancestro
 						int cantDeHijosDelAncestro = entrada.getValue();
+						
+						int nuevaCantDeHijosDelAncestro = cantDeHijosDelAncestro + 1;
 						//Remuevo la entrada ancestro del diccionario
 						this.diccionarioDeGrados.remove(entrada);
 						//Vuelvo a agregar al diccionario con el mismo rotulo pero con actualizando la cantidad de descendientes
-						this.diccionarioDeGrados.insert(rotuloDelNodoAncestro, cantDeHijosDelAncestro + 1);
+						this.diccionarioDeGrados.insert(rotuloDelNodoAncestro, nuevaCantDeHijosDelAncestro);
 						
+						this.verificarGradoDelArbol( rotuloDelNodoAncestro, nuevaCantDeHijosDelAncestro);
 					} 
 				} catch (InvalidKeyException | InvalidEntryException e1) {
 					System.out.println("Algo salio mal");
@@ -145,7 +147,7 @@ public class BackgroundPrograma {
 					System.out.println("Algo mal salio (1)");
 				}
 					
-				}
+			}
 			
 			this.arbolGeneral.removeNode(pos);
 			//Los descendientes del nodo removido pasa al nodo ancestro menos uno (el nodo removido)
@@ -162,9 +164,13 @@ public class BackgroundPrograma {
 				cantidadDeHijosDelAncestro = entradaDelAncestroDelDiccionario.getValue();
 				//Elimino al nodo ancestro para luego volver a insertarlo con la cantidad de hijos actualizado
 				this.diccionarioDeGrados.remove(entradaDelAncestroDelDiccionario);
-				//Inserto al ancestro del nodo eliminado y para los descendientes tengo: la cantidad que tenia + la cantidad de descendientes que tenia el nodo eliminado - uno por el nodo eliminado
-				this.diccionarioDeGrados.insert(rotuloDelAncestroDelNodoRemovido, cantidadDeHijosDelAncestro + cantidadDeHijosDelNodo - 1);
 				
+				int nuevaCantidadDeDescendienteDelAncestro = cantidadDeHijosDelAncestro + cantidadDeHijosDelNodo - 1;
+
+				//Inserto al ancestro del nodo eliminado y para los descendientes tengo: la cantidad que tenia + la cantidad de descendientes que tenia el nodo eliminado - uno por el nodo eliminado
+				this.diccionarioDeGrados.insert(rotuloDelAncestroDelNodoRemovido, nuevaCantidadDeDescendienteDelAncestro );
+
+				this.verificarGradoDelArbol( rotuloDelAncestroDelNodoRemovido, nuevaCantidadDeDescendienteDelAncestro);
 			} catch (InvalidKeyException | InvalidEntryException e) {
 				System.out.println("Algo salio mal (2)");
 			}
@@ -177,22 +183,34 @@ public class BackgroundPrograma {
 	public boolean obtenerGrados() {
 		boolean seCompleto = false;
 		int [] arreglo = new int [this.ordenDelArbol];
-		Iterator<Position<Entry<String,Integer>>> it = this.arbolGeneral.positions().iterator();
 		
-		for(Entry<String,Integer> entrada : this.arbolGeneral) {
-			
-		}
+		
 		
 		return seCompleto;
 	}
 	
+	private void verificarGradoDelArbol(String rotuloDelNodoAVerificar, int cantidadDeDescendienteDeUnNodo) {
+		//Cada vez que se modifica el arbol, se utilizara el metodo para ver si hay que actualizar la variable gradoDelArbol y cual es el rotulo
+		if ( cantidadDeDescendienteDeUnNodo > this.gradoDelArbol ) {
+			this.gradoDelArbol = cantidadDeDescendienteDeUnNodo;
+			this.rotuloDelNodoConMasDescendiente = rotuloDelNodoAVerificar;
+		} else if (rotuloDelNodoAVerificar.equals(rotuloDelNodoConMasDescendiente)) {
+			//Si la cantidad pasada por parametro no es mayor al grado del arbol pero es el mismo rotulo --> se modifico el nodo que tenia mayor descendientes
+			this.buscarGradoDelArbol();
+		}	
+		System.out.println(this.gradoDelArbol);
+	}
 	
-	
-	public int obtenerGradoDelArbol() {
-		int gradoDelArbol = 0;
-		
+	private void buscarGradoDelArbol() {
+		//Establezco inicialmente que el grado del arbol es cero
+		int mayorGradoEncontrado = 0;
+		String rotuloDelNodoDeMayorGradoEncontrado = "";
 		if(this.arbolGeneral.size() == 1) {
-			gradoDelArbol = 1;
+			mayorGradoEncontrado = 1;
+			try {
+				rotuloDelNodoDeMayorGradoEncontrado  = this.arbolGeneral.root().element().getKey();
+			} catch (EmptyTreeException e) {}
+			
 		} else {
 			
 			Iterable<Position<Entry<String,Integer>>> positions = this.arbolGeneral.positions();
@@ -204,10 +222,8 @@ public class BackgroundPrograma {
 				
 				try {
 					esPosInternal = this.arbolGeneral.isInternal(pos);
-				} catch (InvalidPositionException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				} catch (InvalidPositionException e1) {}
+				
 				//Si el nodo que referencia pos es un nodo interno en el arbol
 				if(esPosInternal) {
 					Iterable<Position<Entry<String,Integer>>> hijosDePos = null;
@@ -219,43 +235,22 @@ public class BackgroundPrograma {
 						cantDeHijosDePos++;
 					}
 					
-					if(cantDeHijosDePos > gradoDelArbol) {
-						gradoDelArbol = cantDeHijosDePos;
+					if(cantDeHijosDePos > mayorGradoEncontrado) {
+						mayorGradoEncontrado = cantDeHijosDePos;
+						rotuloDelNodoDeMayorGradoEncontrado = pos.element().getKey();
 					}
 				}
 				
 			}
 		}
 		
-		return gradoDelArbol;
+		//Luego de la busqueda, actualizo las variables por lo encontrado
+		this.gradoDelArbol = mayorGradoEncontrado;
 	}
 	
 	public int obtenerTamañoDelArbol() {
 		return this.arbolGeneral.size();
 	}
-	
-//	private Position<Entry<String,Integer>> buscarEnLaLista(String rotulo, Integer valor) {
-//		
-//		boolean seEncontro = false;
-//		Iterator<Position<Entry<String,Integer>>> it = this.listDeNodosDefinidos.positions().iterator();
-//		Position<Entry<String,Integer>> posActual = it.hasNext() ? it.next() : null;
-//		
-//		TNodo<Entry<String,Integer>> nodoRetornar = null;
-//		
-//		while( posActual != null && !seEncontro ) {
-//			if(posActual.element().getKey().equals(rotulo) && posActual.element().getValue().equals(valor)) {
-//				seEncontro = true;
-//			} else {
-//				posActual = it.hasNext() ? it.next() : null;
-//			}
-//		}
-//		
-//		if(seEncontro) {
-//			nodoRetornar = new TNodo<Entry<String,Integer>>( posActual.element());
-//		}
-//		
-//		return nodoRetornar;
-//	}
 	
 	public String rotuloDeLaRaiz() {
 		String rotulo = null;
@@ -278,18 +273,7 @@ public class BackgroundPrograma {
 	}
 	
 	private int height(Position<Entry<String, Integer>> v) throws InvalidPositionException {
-//		int altura = 0;
-//		for(Position<Entry<String,Integer>> v: this.arbolGeneral.positions()) {
-//			try {
-//				if( this.arbolGeneral.isExternal(v)) {
-//					altura = Math.max( altura, this.arbolGeneral.depth(v));
-//				}	
-//			} catch (InvalidPositionException e) {
-//				throw new InvalidPositionException (e.getMessage());
-//			}
-//			
-//		}
-//		return altura;
+
 		int altura = 0;
 		if(this.arbolGeneral.isExternal(v)) {
 			return 0;

@@ -233,9 +233,15 @@ public class InterfazGrafica extends JFrame {
 						 */
 						boolean seCompleto = false;
 						//Para todas las opciones requiero los valores de algun nodo definido
-						String sRotuloDeNodoDefinido = tfRotuloDeNodoDefinido.getText();
-						String sValorDeNodoDefinido = tfValorDeNodoDefinido.getText();
-						int intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
+						String sRotuloDeNodoDefinido = null;
+						String sValorDeNodoDefinido = null;
+						int intValorDeNodoDefinido = 0;
+						//Para las opciones que requieren de los datos de un nodo definido, obtengo los valores de los textField
+						if(necesitaLosDatosDeUnNodoDefinido(intComboBox)) {
+							sRotuloDeNodoDefinido = tfRotuloDeNodoDefinido.getText();
+							sValorDeNodoDefinido = tfValorDeNodoDefinido.getText();
+							intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
+						}
 						
 						//Añadir nodo
 						if( intComboBox == 1 ) {
@@ -264,6 +270,20 @@ public class InterfazGrafica extends JFrame {
 							if(seCompleto) {
 								crearVentanaEmergenteExitosa("<html>¡Se elimino el nodo ( "+sRotuloDeNodoDefinido+", "+intValorDeNodoDefinido+") del arbol!</html>");
 							}
+						} else if( intComboBox == 3) {
+							
+						} else if( intComboBox == 4) {
+							crearVentanaEmergenteExitosa("Grado actual del árbol");
+						} else if( intComboBox == 5) {
+							
+						} else if( intComboBox == 6) {
+							
+						} else if( intComboBox == 7) {
+							
+						} else if( intComboBox == 8) {
+							
+						} else if( intComboBox == 9) {
+							
 						}
 						
 						limpiarInputs();
@@ -320,12 +340,16 @@ public class InterfazGrafica extends JFrame {
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(true);
 						tfValorDeNodoDefinido.setEditable(true);
+						//Altero el texto del boton
+						btnIngresarValores.setText("Ingresar valores");
 					} else if(indexComboBox == 3) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(true);
 						tfValorDeNodoDefinido.setEditable(true);
+						//Altero el texto del boton
+						btnIngresarValores.setText("Ingresar valores");
 					} else if(indexComboBox == 4) {
 						limpiarInputs();
 						
@@ -373,6 +397,13 @@ public class InterfazGrafica extends JFrame {
 		});
 	}
 	
+	private boolean necesitaLosDatosDeUnNuevoNodo(int index) {
+		return index == 1;
+	}
+	
+	private boolean necesitaLosDatosDeUnNodoDefinido(int index) {
+		return index == 1 || index == 2 || index == 3;
+	}
 	
 	private void crearVentanaEmergenteExitosa(String mensaje) {
 		JOptionPane.showMessageDialog(null, mensaje, "Operacion exitosa", JOptionPane.INFORMATION_MESSAGE);
