@@ -15,12 +15,13 @@ import Excepciones.InvalidPositionException;
 
 public class InterfazGrafica extends JFrame {
 	
-	private BackgroundPrograma programa;
-	private JPanel pnOperacion, pnNuevoNodo, pnNodoDefinido, pnDatos;
+	private Programa programa;
+	private JPanel pnOperacion, pnNuevoNodo, pnNodoDefinido, pnDatos, pnDisplay;
 	private JComboBox<String> cbAction;
 	private JLabel lbNuevoRotulo, lbNuevoValor, lbRotuloDeNodoDefinido, lbValorDeNodoDefinido, lbTamañoDelArbol;
 	private JTextField tfNuevoRotulo, tfNuevoValor, tfRotuloDeNodoDefinido, tfValorDeNodoDefinido;
 	private JButton btnIngresarValores;
+	private JTextArea taDisplay;
 	private boolean seCreoArbol;
 	private boolean seCreoRaiz;
 	private int tamañoDelArbol;
@@ -36,11 +37,12 @@ public class InterfazGrafica extends JFrame {
 		this.seCreoArbol = false;
 		this.seCreoRaiz = false;
 		this.tamañoDelArbol = 0;
-		this.programa = new BackgroundPrograma();
+		this.programa = new Programa();
 //		this.armarContenedores();
 		this.armarComboBox();
 		this.armarPanelIngresarValores();
 		this.armarPanelDatos();
+		this.armarPanelDeTexto();
 	}
 	
 	private void armarPanelIngresarValores() {
@@ -141,6 +143,21 @@ public class InterfazGrafica extends JFrame {
 		pnDatos.add(lbTamañoDelArbol);
 	}
 	
+	private void armarPanelDeTexto() {
+		pnDisplay = new JPanel();
+		pnDisplay.setBounds( 276, 8, 250, 250);
+		pnDisplay.setBorder(BorderFactory.createTitledBorder(""));
+		pnDisplay.setLayout(null);
+		
+		taDisplay = new JTextArea();
+		taDisplay.setBounds(8, 8, 234, 234);
+		taDisplay.setEditable(false);
+		
+		pnDisplay.add(taDisplay);
+		
+		getContentPane().add(pnDisplay);
+	}
+	
 	private void armarComboBox() {
 		cbAction = new JComboBox<String>();
 		cbAction.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -163,8 +180,7 @@ public class InterfazGrafica extends JFrame {
 		
 		getContentPane().add(cbAction);
 	}
-	
-	
+		
 	private void armarOyenteBoton() {
 		btnIngresarValores.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -193,12 +209,18 @@ public class InterfazGrafica extends JFrame {
 						//Obtener los strings de los JTextField
 						String sRotuloIngresado = tfNuevoRotulo.getText();
 						String sValorIngresado = tfNuevoValor.getText();
-						int intValorIngresado = Integer.parseInt(sValorIngresado);
+						int intValorIngresado = 0;
+						try {
+							intValorIngresado = Integer.parseInt(sValorIngresado);
+							
+						} catch (NumberFormatException error) {
+							crearVentanaEmergenteFallida("Hubo un error al crear la raiz");
+						}
 						
 						try {
 							seCreoRaiz = programa.crearRaiz(sRotuloIngresado, intValorIngresado);
 						} catch (InvalidOperationException e1) {
-							crearVentanaEmergenteFallida("Hubo un error al crear la raiz");
+							crearVentanaEmergenteFallida("Hubo un error al ingresar los datos");
 						}
 						
 						if(seCreoRaiz) {
@@ -240,7 +262,12 @@ public class InterfazGrafica extends JFrame {
 						if(necesitaLosDatosDeUnNodoDefinido(intComboBox)) {
 							sRotuloDeNodoDefinido = tfRotuloDeNodoDefinido.getText();
 							sValorDeNodoDefinido = tfValorDeNodoDefinido.getText();
-							intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
+							try {
+								intValorDeNodoDefinido = Integer.parseInt(sValorDeNodoDefinido);
+							}catch (NumberFormatException error) {
+								crearVentanaEmergenteFallida("Hubo un error al ingresar los datos");
+							}
+							
 						}
 						
 						//Añadir nodo
@@ -248,7 +275,15 @@ public class InterfazGrafica extends JFrame {
 							//Para añadir un nuevo nodo debo obtener datos del panel de nuevo nodo
 							String sRotuloIngresado = tfNuevoRotulo.getText();
 							String sValorIngresado = tfNuevoValor.getText();
-							int intValorIngresado = Integer.parseInt(sValorIngresado);
+							
+							int intValorIngresado = 0;
+							
+							try {
+								intValorIngresado = Integer.parseInt(sValorIngresado);
+								
+							} catch (NumberFormatException  error) {
+								crearVentanaEmergenteFallida("Hubo un error al ingresar los datos");
+							}
 							
 							try {
 								seCompleto = programa.agregarNodo(sRotuloIngresado, intValorIngresado, sRotuloDeNodoDefinido, intValorDeNodoDefinido);
@@ -263,7 +298,7 @@ public class InterfazGrafica extends JFrame {
 						} else if( intComboBox == 2 ) { //Eliminar nodo
 							
 							try {
-								seCompleto = programa.eliminarNodo(sRotuloDeNodoDefinido, intValorDeNodoDefinido);
+								seCompleto = programa.eliminarNodo(sRotuloDeNodoDefinido);
 							} catch (InvalidPositionException error) {
 								crearVentanaEmergenteFallida(error.getMessage());
 							}
@@ -272,16 +307,22 @@ public class InterfazGrafica extends JFrame {
 							}
 						} else if( intComboBox == 3) {
 							
+							taDisplay.setText(programa.obtenerGrados());
+							
 						} else if( intComboBox == 4) {
-							crearVentanaEmergenteExitosa("Grado actual del árbol");
+							crearVentanaEmergenteExitosa("Grado actual del árbol: "+programa.obtenerGradoDelArbol());
 						} else if( intComboBox == 5) {
-							
+							try {
+								taDisplay.setText("Camino al nodo: "+programa.obtenerCamino(sRotuloDeNodoDefinido, intValorDeNodoDefinido));
+							} catch (InvalidPositionException e1) {
+								crearVentanaEmergenteFallida(e1.getMessage());
+							}
 						} else if( intComboBox == 6) {
-							
+							taDisplay.setText("Recorrido Preordern: "+programa.mostrarRecorridoPreorden());
 						} else if( intComboBox == 7) {
-							
+							taDisplay.setText(programa.mostrarPorNiveles());
 						} else if( intComboBox == 8) {
-							
+							taDisplay.setText("Recorrido Preorden: "+programa.mostrarRecorridoPostorden());
 						} else if( intComboBox == 9) {
 							
 						}
@@ -334,61 +375,74 @@ public class InterfazGrafica extends JFrame {
 						tfNuevoValor.setEditable(true);
 						tfRotuloDeNodoDefinido.setEditable(true);
 						tfValorDeNodoDefinido.setEditable(true);
+						btnIngresarValores.setText("Ingresar valores");
 					} else if(indexComboBox == 2) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(true);
 						tfValorDeNodoDefinido.setEditable(true);
+						btnIngresarValores.setText("Ingresar valores");
 						//Altero el texto del boton
 						btnIngresarValores.setText("Ingresar valores");
 					} else if(indexComboBox == 3) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
-						tfRotuloDeNodoDefinido.setEditable(true);
-						tfValorDeNodoDefinido.setEditable(true);
+						tfRotuloDeNodoDefinido.setEditable(false);
+						tfValorDeNodoDefinido.setEditable(false);
 						//Altero el texto del boton
-						btnIngresarValores.setText("Ingresar valores");
+						btnIngresarValores.setText("Obtener grados ...");
 					} else if(indexComboBox == 4) {
 						limpiarInputs();
-						
-						btnIngresarValores.setText("Obtener grado del árbol ...");
-						
+					
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(false);
 						tfValorDeNodoDefinido.setEditable(false);
+						btnIngresarValores.setText("Obtener grado del árbol ...");
+						
 					} else if(indexComboBox == 5) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
-						tfRotuloDeNodoDefinido.setEditable(false);
-						tfValorDeNodoDefinido.setEditable(false);
+						tfRotuloDeNodoDefinido.setEditable(true);
+						tfValorDeNodoDefinido.setEditable(true);
+						btnIngresarValores.setText("Mostrar camino");
 					} else if(indexComboBox == 6) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(false);
 						tfValorDeNodoDefinido.setEditable(false);
+						btnIngresarValores.setText("Mostrar recorrido pre-orden");
+						
 					} else if(indexComboBox == 7) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(false);
 						tfValorDeNodoDefinido.setEditable(false);
+						btnIngresarValores.setText("Mostrar recorrido por niveles");
+						
 					} else if(indexComboBox == 8) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(false);
 						tfValorDeNodoDefinido.setEditable(false);
+						btnIngresarValores.setText("Mostrar recorrido post-orden");
 					} else if(indexComboBox == 9) {
 						limpiarInputs();
 						tfNuevoRotulo.setEditable(false);
 						tfNuevoValor.setEditable(false);
 						tfRotuloDeNodoDefinido.setEditable(false);
 						tfValorDeNodoDefinido.setEditable(false);
+						
+						String k = JOptionPane.showInputDialog("Indica el grado k que deseas utilizar");
+						int intK = Integer.parseInt(k);
+						programa.eliminarNodosGradoK(intK);
+						crearVentanaEmergenteExitosa("¡Se eliminaron todos los nodos de grado"+intK+" del árbol!");
 					}
 				}
 				
@@ -397,12 +451,8 @@ public class InterfazGrafica extends JFrame {
 		});
 	}
 	
-	private boolean necesitaLosDatosDeUnNuevoNodo(int index) {
-		return index == 1;
-	}
-	
 	private boolean necesitaLosDatosDeUnNodoDefinido(int index) {
-		return index == 1 || index == 2 || index == 3;
+		return index == 1 || index == 2 ;
 	}
 	
 	private void crearVentanaEmergenteExitosa(String mensaje) {
