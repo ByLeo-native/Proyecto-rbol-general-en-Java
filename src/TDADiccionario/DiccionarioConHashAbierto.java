@@ -35,15 +35,12 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 	
 	public Entry<K,V> find(K key) throws InvalidKeyException {
 		int hashCode;
-		try {
-			hashCode = this.hashCode(key);
-			for(Entrada<K,V> entrada : this.arregloOfBuckets[hashCode]) {
-				if(entrada.getKey().equals(key)) {
-					return entrada;
-				}
+		
+		hashCode = this.hashCode(key);
+		for(Entrada<K,V> entrada : this.arregloOfBuckets[hashCode]) {
+			if(entrada.getKey().equals(key)) {
+				return entrada;
 			}
-		} catch (InvalidKeyException e) {
-			throw new InvalidKeyException(e.getMessage());
 		}
 		return null;
 		
@@ -52,26 +49,20 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 	public Iterable<Entry<K,V>> findAll(K key) throws InvalidKeyException {
 		int hashCode;
 		PositionList<Entry<K,V>> list = new ListaDoblementeEnlazada<Entry<K,V>>();
-		try {
-			hashCode = this.hashCode(key);
-			for(Entrada<K,V> entrada : this.arregloOfBuckets[hashCode]) {
-				if(entrada.getKey().equals(key)) {
-					list.addLast(entrada);
-				}
+		
+		hashCode = this.hashCode(key);
+		for(Entrada<K,V> entrada : this.arregloOfBuckets[hashCode]) {
+			if(entrada.getKey().equals(key)) {
+				list.addLast(entrada);
 			}
-		} catch (InvalidKeyException e) {
-			throw new InvalidKeyException(e.getMessage());
 		}
+		
 		return list;
 	}
 	
 	public Entry<K,V> insert(K key, V value) throws InvalidKeyException {
-		int hashCode;
-		try {
-			hashCode = this.hashCode(key);
-		} catch (InvalidKeyException e) {
-			throw new InvalidKeyException(e.getMessage());
-		}
+		int hashCode = this.hashCode(key);
+		
 		Entrada<K,V> nuevaEntrada = new Entrada<K,V>( key, value);
 		this.arregloOfBuckets[hashCode].addLast(nuevaEntrada);
 		this.tamaño++;
@@ -82,9 +73,8 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 	}
 
 	public Entry<K,V> remove (Entry<K,V> e) throws InvalidEntryException {
-		Entrada<K,V> entrada;
+		Entrada<K,V> entrada = checkEntry(e);
 		try {
-			entrada = checkEntry(e);
 			int hashCode = this.hashCode(entrada.getKey());
 			PositionList<Entrada<K,V>> list = this.arregloOfBuckets[hashCode];
 			//Buscar la posicion con la entrada buscada
@@ -95,11 +85,8 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 					return list.remove(pos);
 				}
 			}
-		} catch ( InvalidEntryException error) {
-			throw new InvalidEntryException (error.getMessage());
-		} catch ( InvalidKeyException | InvalidPositionException error1 ) {
-			
-		}
+		} catch ( InvalidKeyException | InvalidPositionException error1 ) {}
+		
 		//Si no encuentra la posicion con la entrada, entonces lanzar excepcion
 		throw new InvalidEntryException("Clave invalida");
 		
