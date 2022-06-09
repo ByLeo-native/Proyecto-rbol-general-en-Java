@@ -11,13 +11,13 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * Crea una lista vacia
 	 */
 	public ListaDoblementeEnlazada() {
-		head = new DNodo<E>(null);
-		tail = new DNodo<E>(null);
-		head.setPrev(null);
-		head.setNext(tail);
-		tail.setPrev(head);
-		tail.setNext(null);
-		tamaño = 0;
+		this.head = new DNodo<E>(null);
+		this.tail = new DNodo<E>(null);
+		this.head.setPrev(null);
+		this.head.setNext(tail);
+		this.tail.setPrev(head);
+		this.tail.setNext(null);
+		this.tamaño = 0;
 	}
 	
 	/**
@@ -25,7 +25,7 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @return Cantidad de elementos de la lista.
 	 */
 	public int size() {
-		return tamaño;
+		return this.tamaño;
 	}
 	
 	/**
@@ -42,11 +42,8 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws EmptyListException si la lista está vacía.
 	 */
 	public Position<E> first() throws EmptyListException {
-		if (this.isEmpty()) {
-			throw new EmptyListException("Lista vacia");
-		} else {
-			return head.getNext(); 
-		}
+		this.siLaListaEstaVaciaLanzaEmptyListException();
+		return this.head.getNext();
 	}
 	
 	/**
@@ -55,10 +52,8 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws EmptyListException si la lista está vacía.
 	 */
 	public Position<E> last() throws EmptyListException {
-		if(this.isEmpty()) {
-			throw new EmptyListException("Lista vacia");
-		} 
-		return tail.getPrev();
+		this.siLaListaEstaVaciaLanzaEmptyListException(); 
+		return this.tail.getPrev();
 	}
 	
 	/**
@@ -69,23 +64,12 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws BoundaryViolationException si la posición pasada por parámetro corresponde al último elemento de la lista.
 	 */
 	public Position<E> next(Position<E> p) throws InvalidPositionException, BoundaryViolationException {	
-		if (this.isEmpty()) {
-			throw new InvalidPositionException("Lista vacia.");
+		this.siLaListaEstaVaciaLanzaInvalidPositionException();
+		DNodo<E> pos = checkPosition(p);
+		if (p == this.tail.getPrev()) {
+			throw new BoundaryViolationException("No existe un siguiente al ultimo elemento.");
 		}
-		if (p == null) {
-			throw new InvalidPositionException("p referencia nula");
-		}
-		DNodo<E> pos = null;
-		try {
-			pos = checkPosition(p);
-			if (p == tail.getPrev()) {
-				throw new BoundaryViolationException("No existe un siguiente al ultimo elemento.");
-			}
-			return pos.getNext();
-		} catch (InvalidPositionException e) {
-			e.fillInStackTrace();
-		}
-		return null;		
+		return pos.getNext();		
 	}
 	
 	/**
@@ -96,24 +80,13 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws BoundaryViolationException si la posición pasada por parámetro corresponde al primer elemento de la lista.
 	 */
 	public Position<E> prev(Position<E> p) throws InvalidPositionException, BoundaryViolationException {
-		if (this.isEmpty()) {
-			throw new InvalidPositionException("Lista vacia.");
+		this.siLaListaEstaVaciaLanzaInvalidPositionException();
+		DNodo<E> pos = checkPosition(p);
+		if (pos == this.head.getNext()) {
+			throw new BoundaryViolationException("No existe el previo al primer elemento");
+		} else {
+			return pos.getPrev();
 		}
-		if (p == null) {
-			throw new InvalidPositionException("p referencia nula");
-		}
-		try {
-			DNodo<E> pos;
-			pos = checkPosition(p);
-			if (pos == this.head.getNext()) {
-				throw new BoundaryViolationException("No existe el previo al primer elemento");
-			} else {
-				return pos.getPrev();
-			}
-		} catch (InvalidPositionException e) {
-			e.fillInStackTrace();
-		}
-		return null;
 	}
 	
 	/**
@@ -123,15 +96,15 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	public void addFirst(E element) {
 		DNodo<E> nuevo = new DNodo<E> (element);
 		//A nuevo le establezco como siguiente al actual primer elemento de la lista
-		nuevo.setNext(head.getNext());
+		nuevo.setNext(this.head.getNext());
 		//Al nuevo primer elemento le establezco como previo a head
-		nuevo.setPrev(head);
+		nuevo.setPrev(this.head);
 		//Establezco como el siguiente de head al nuevo elemento que sera el primer elemento
-		head.setNext(nuevo);
+		this.head.setNext(nuevo);
 		//Al siguiente de nuevo le establezco como previo al nuevo primer elemento
 		nuevo.getNext().setPrev(nuevo);
 		//Aumento el tamaño de la lista
-		tamaño++;
+		this.tamaño++;
 	}
 	
 	/**
@@ -159,21 +132,14 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws InvalidPositionException si la posición es inválida o la lista está vacía.
 	 */
 	public void addAfter(Position<E> p, E element) throws InvalidPositionException {
-		if(this.isEmpty()) {
-			throw new InvalidPositionException("Lista vacia");
-		} else {
-			try {
-				DNodo<E> pos = checkPosition(p);
-				DNodo<E> nuevo = new DNodo<E>(element);
-				nuevo.setNext(pos.getNext());
-				nuevo.setPrev(pos);
-				nuevo.getNext().setPrev(nuevo);
-				pos.setNext(nuevo);
-				tamaño++;
-			} catch (InvalidPositionException e) {
-				throw new InvalidPositionException(e.getMessage());
-			}
-		}
+		this.siLaListaEstaVaciaLanzaInvalidPositionException();
+		DNodo<E> pos = checkPosition(p);
+		DNodo<E> nuevo = new DNodo<E>(element);
+		nuevo.setNext(pos.getNext());
+		nuevo.setPrev(pos);
+		nuevo.getNext().setPrev(nuevo);
+		pos.setNext(nuevo);
+		this.tamaño++;
 	}
 
 	/**
@@ -183,21 +149,14 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws InvalidPositionException si la posición es inválida o la lista está vacía.
 	 */
 	public void addBefore(Position<E> p, E element) throws InvalidPositionException {
-		if (this.isEmpty()) {
-			throw new InvalidPositionException("Lista vacia");
-		} else {
-			try {
-				DNodo<E> pos = checkPosition(p);
-				DNodo<E> nuevo = new DNodo<E>(element);
-				nuevo.setNext(pos);
-				nuevo.setPrev(pos.getPrev());
-				nuevo.getPrev().setNext(nuevo);
-				pos.setPrev(nuevo);
-				tamaño++;
-			} catch (InvalidPositionException e) {
-				throw new InvalidPositionException(e.getMessage());
-			}
-		}
+		this.siLaListaEstaVaciaLanzaInvalidPositionException();
+		DNodo<E> pos = checkPosition(p);
+		DNodo<E> nuevo = new DNodo<E>(element);
+		nuevo.setNext(pos);
+		nuevo.setPrev(pos.getPrev());
+		nuevo.getPrev().setNext(nuevo);
+		pos.setPrev(nuevo);
+		this.tamaño++;
 	}
 	
 	/**
@@ -207,24 +166,19 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws InvalidPositionException si la posición es inválida o la lista está vacía.
 	 */	
 	public E remove(Position<E> p) throws InvalidPositionException {
-		if(this.isEmpty()) {
-			throw new InvalidPositionException("Lista vacia.");
-		} else {
-			E aux = null;
-			try {
-				DNodo<E> pos = checkPosition(p);
-				aux = pos.element();
-				pos.getPrev().setNext(pos.getNext());
-				pos.getNext().setPrev(pos.getPrev());
-				pos.setElement(null);
-				pos.setPrev(null);
-				pos.setNext(null);
-				tamaño--;
-			} catch (InvalidPositionException e) {
-				throw new InvalidPositionException(e.getMessage());
-			}
-			return aux;
-		}
+		this.siLaListaEstaVaciaLanzaInvalidPositionException();
+		DNodo<E> pos = checkPosition(p);
+		E aux = pos.element();
+		pos.getPrev().setNext(pos.getNext());
+		pos.getNext().setPrev(pos.getPrev());
+		
+		pos.setElement(null);
+		pos.setPrev(null);
+		pos.setNext(null);
+		
+		this.tamaño--;
+		return aux;
+	
 	}
 	
 	/**
@@ -235,19 +189,11 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @throws InvalidPositionException si la posición es inválida o la lista está vacía.	 
 	 */
 	public E set(Position<E> p, E element) throws InvalidPositionException {
-		E aux = null;
-		if (this.isEmpty()) {
-			throw new InvalidPositionException("Lista vacia");
-		} else {
-			try {
-				DNodo<E> pos = checkPosition(p);
-				aux = pos.element();
-				pos.setElement(element);
+		this.siLaListaEstaVaciaLanzaInvalidPositionException();
+		DNodo<E> pos = checkPosition(p);
+		E aux = pos.element();
+		pos.setElement(element);
 				
-			} catch (InvalidPositionException e) {
-				throw new InvalidPositionException(e.getMessage());
-			}
-		}
 		return aux;
 	}
 	
@@ -259,10 +205,7 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 		ElementIterator<E> it = null;
 		try {
 			it = new ElementIterator<E>(this);
-		} catch (EmptyListException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Entro en un excepcion");
-		}
+		} catch (EmptyListException e) {System.out.println("Entro en un excepcion");}
 		return it;
 	}
 	
@@ -271,57 +214,30 @@ public class ListaDoblementeEnlazada <E> implements PositionList <E> {
 	 * @return Una colección iterable de posiciones.
 	 */
 	public Iterable<Position<E>> positions() {
-		PositionList<Position<E>> p = new ListaDoblementeEnlazada<Position<E>>();
+		PositionList<Position<E>> list = new ListaDoblementeEnlazada<Position<E>>();
 		if (!this.isEmpty()) {
 			try {
 				Position<E> pos = this.first();
 				while(pos != this.last()) {
-					p.addLast(pos);
+					list.addLast(pos);
 					pos = this.next(pos);
 				}
 				//Ya cuando a la salida del while, pos sera la ultima posicion y hay que añadirla
-				p.addLast(pos);
-			} catch (EmptyListException | InvalidPositionException | BoundaryViolationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				list.addLast(pos);
+			} catch (EmptyListException | InvalidPositionException | BoundaryViolationException e) {e.printStackTrace();}
 		}
-		return p;
+		return list;
 	}
 	
-	public void insertarOrdenado(E element) {
+	private void siLaListaEstaVaciaLanzaEmptyListException() throws EmptyListException {
+		if(this.isEmpty()) {
+			throw new EmptyListException("Lista vacia");
+		}
+	}
+	
+	private void siLaListaEstaVaciaLanzaInvalidPositionException() throws InvalidPositionException {
 		if (this.isEmpty()) {
-			this.addFirst(element);
-		} else {	
-			DefaultComparator<E> comp = new DefaultComparator<E>();
-			try {
-				Position<E> p = this.first(), ultima = this.last();
-				if ( comp.compare(element, p.element()) < 0) {
-					this.addFirst(element);
-				} else {
-					boolean encontrePosicion = false;
-					while ( p!= null && !encontrePosicion) {
-						int c = comp.compare(element, p.element());
-						//Si element es mayor al elemento en p
-						if ( c >= 0) {
-							//entonces, Si p no es el ultimo elemento entonces pasa al siguiente, de lo contrario se null
-							p = (p!=ultima)? this.next(p) : null;
-						} else {
-							encontrePosicion = true;
-						}
-					}
-					//Como el elemento de n es menor que element
-					//Creo un nuevo nodo con elemento element, previo a n (es el primero q es mas chico)
-					// y siguiente al siguiente de n
-					if(encontrePosicion) {
-						this.addBefore(p, element);
-					} else {
-						this.addAfter(ultima, element);
-					}
-				}	
-			} catch (EmptyListException | BoundaryViolationException | InvalidPositionException e) {
-				e.fillInStackTrace();
-			}
+			throw new InvalidPositionException("Lista vacia.");
 		}
 	}
 

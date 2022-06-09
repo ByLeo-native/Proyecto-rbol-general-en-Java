@@ -64,6 +64,10 @@ public class QueueCircular <E> implements Queue <E> {
 			datos[r] = element;
 			r = (r+1) % datos.length;
 		}
+		
+		if((datos.length - f + r)% (datos.length) == datos.length) {
+			this.agrandarArreglo();
+		}
 	}
 	
 	/**
@@ -80,5 +84,14 @@ public class QueueCircular <E> implements Queue <E> {
 			f = (f+1) % datos.length;
 			return temp;
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void agrandarArreglo() {
+		E [] nuevoArreglo = (E[]) new Object [this.datos.length + 23 ];
+		for(int i = 0; i < this.datos.length; i++) {
+			nuevoArreglo [i] = this.datos [i];
+		}
+		this.datos = nuevoArreglo;
 	}
 }
