@@ -11,16 +11,16 @@ import TDAMapeo.Entry;
 
 public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 	private int tamaño;
-	protected PositionList<Entrada<K,V>> [] arregloOfBuckets;
+	protected PositionList<Entry<K,V>> [] arregloOfBuckets;
 	protected int N;
 	protected static final float factor= 0.9f;
 	
 	@SuppressWarnings("unchecked")
 	public DiccionarioConHashAbierto () {
 		N = 223;
-		this.arregloOfBuckets = (PositionList<Entrada<K,V>>[]) new ListaDoblementeEnlazada[N];
+		this.arregloOfBuckets = (PositionList<Entry<K,V>>[]) new ListaDoblementeEnlazada[N];
 		for( int i = 0; i < N; i++) {
-			arregloOfBuckets[i] = new ListaDoblementeEnlazada<Entrada<K,V>>();
+			arregloOfBuckets[i] = new ListaDoblementeEnlazada<Entry<K,V>>();
 		}
 		tamaño = 0;
 	}
@@ -37,7 +37,7 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 		int hashCode;
 		
 		hashCode = this.hashCode(key);
-		for(Entrada<K,V> entrada : this.arregloOfBuckets[hashCode]) {
+		for(Entry<K,V> entrada : this.arregloOfBuckets[hashCode]) {
 			if(entrada.getKey().equals(key)) {
 				return entrada;
 			}
@@ -51,7 +51,7 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 		PositionList<Entry<K,V>> list = new ListaDoblementeEnlazada<Entry<K,V>>();
 		
 		hashCode = this.hashCode(key);
-		for(Entrada<K,V> entrada : this.arregloOfBuckets[hashCode]) {
+		for(Entry<K,V> entrada : this.arregloOfBuckets[hashCode]) {
 			if(entrada.getKey().equals(key)) {
 				list.addLast(entrada);
 			}
@@ -76,9 +76,9 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 		Entrada<K,V> entrada = checkEntry(e);
 		try {
 			int hashCode = this.hashCode(entrada.getKey());
-			PositionList<Entrada<K,V>> list = this.arregloOfBuckets[hashCode];
+			PositionList<Entry<K,V>> list = this.arregloOfBuckets[hashCode];
 			//Buscar la posicion con la entrada buscada
-			for( Position<Entrada<K,V>> pos : list.positions()) {
+			for( Position<Entry<K,V>> pos : list.positions()) {
 				if( pos.element().equals(entrada)) {
 					this.tamaño--;
 					//Remueve a la posicion y retornar el elemento que sera la entrada
@@ -95,7 +95,7 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 	public Iterable<Entry<K,V>> entries() {
 		PositionList<Entry<K,V>> it = new ListaDoblementeEnlazada<Entry<K,V>>();
 		for( int i = 0; i < N; i++ ) {
-			for(Entrada<K,V> entrada : this.arregloOfBuckets[i] ) {
+			for(Entry<K,V> entrada : this.arregloOfBuckets[i] ) {
 				it.addLast(entrada);
 			}
 		}
@@ -140,18 +140,21 @@ public class DiccionarioConHashAbierto <K,V> implements Dictionary <K,V>{
 	
 	@SuppressWarnings("unchecked")
 	private void reHash() {
-		Iterable<Entry<K,V>> entradas= entries();
-		N= N*2;
-		N= nextPrimo(N); tamaño=0;
-		arregloOfBuckets= new PositionList[N];
-			for(int i=0;i<N;i++)
-				arregloOfBuckets[i]= new ListaDoblementeEnlazada<Entrada<K,V>>();
-			for(Entry<K,V> e: entradas) {
-				try {
-					this.insert(e.getKey(), e.getValue());
-				} catch (InvalidKeyException e1) {
-					System.out.println(e1.getMessage());
-				}
+		int tamañoAntesDelReHash = N;
+		N = this.nextPrimo(N*2);
+		PositionList <Entry<K,V>> [] nuevoArreglo = (PositionList<Entry<K,V>>[]) new PositionList[N];
+		//Añado las lista vacias al nuevo arreglo
+		for(int i = 0; i < N; i++) {
+			nuevoArreglo[i] = new ListaDoblementeEnlazada<Entry<K,V>>();
+		}
+		//Por cada buckets del arreglo actual,
+		for( int i = 0; i < tamañoAntesDelReHash; i++) {
+			//Por cada entrada del bucket actual
+			for( Entry<K,V> entrada : this.arregloOfBuckets[i]) {
+				int nuevoHashCode = entrada.getKey().hashCode() % N; //obtengo un nuevo hashCode con el nuevo tamaño del arreglo
+				nuevoArreglo[nuevoHashCode].addLast(entrada); //Añado la entrada en su nuevo correspondiente bucket en el nuevo arreglo
 			}
+		}
+		this.arregloOfBuckets = nuevoArreglo; //Reasigno el arreglo del objeto al nuevo arreglo
 	}
 }
