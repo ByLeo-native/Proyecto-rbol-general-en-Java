@@ -30,7 +30,7 @@ public class ArbolGeneral <E> implements Tree <E> {
 	 * @return Cantidad de nodos en el árbol.
 	 */
 	public int size() {
-		return tamaño;
+		return this.tamaño;
 	}
 	
 	/**
@@ -38,7 +38,7 @@ public class ArbolGeneral <E> implements Tree <E> {
 	 * @return Verdadero si el árbol está vacío, falso en caso contrario.
 	 */
 	public boolean isEmpty() {
-		return tamaño == 0;
+		return this.tamaño == 0;
 	}
 	
 	/**
@@ -47,8 +47,8 @@ public class ArbolGeneral <E> implements Tree <E> {
 	 */
 	public Iterator<E> iterator() {
 		PositionList<E> list = new ListaDoblementeEnlazada<E>();
-		for ( Position<E> pos: this.positions() ) {
-			list.addLast(pos.element());
+		if( !this.isEmpty() ) {
+			this.recPreordenPorElementos(raiz, list);
 		}
 		return list.iterator();
 	}
@@ -60,7 +60,7 @@ public class ArbolGeneral <E> implements Tree <E> {
 	public Iterable<Position<E>> positions() {
 		PositionList<Position<E>> list = new ListaDoblementeEnlazada<Position<E>>();
 		if( !this.isEmpty() ) {
-			recPreorden(raiz, list);
+			this.recPreorden(raiz, list);
 		}
 		return list;
 	}
@@ -565,6 +565,11 @@ public class ArbolGeneral <E> implements Tree <E> {
 		}
 	}
 	
+	/**
+	 * Realiza un recorrido de pre-orden y agrega la posicion de cada elemento del arbol en una lista.
+	 * @param v Nodo desde que se comienza a recorrer.
+	 * @param list
+	 */
 	private void recPreorden( TNodo<E> v, PositionList<Position<E>> list) {
 		list.addLast(v);
 		for( TNodo<E> h : v.getHijos() ) {
@@ -572,49 +577,12 @@ public class ArbolGeneral <E> implements Tree <E> {
 		}
 	}
 	
-	public void insertarHijoAltura(int alt, E rotulo) {
-
-		for (Position<E> pos : positions())
-			if (altura(pos) == alt) {
-				try {
-					addLastChild(pos, rotulo);
-				} catch (InvalidPositionException e) {
-					e.printStackTrace();
-				}
-
-			}
-
-	}
-
-	private int altura(Position<E> v) {
-		int salida = 0;
-		try {
-			if (isExternal(v))
-				salida = 0;
-			else {
-				int h = 0;
-				for (Position<E> w : children(v))
-					h = Math.max(h, altura(w));
-				salida = 1 + h;
-			}
-		} catch (InvalidPositionException e) {
-			e.printStackTrace();
+	private void recPreordenPorElementos( TNodo<E> v, PositionList<E> list) {
+		list.addLast(v.element());
+		for( TNodo<E> h : v.getHijos() ) {
+			recPreordenPorElementos( h, list);
 		}
-		
-		return salida;
 	}
-	
-	public int depth(Position<E> v) throws InvalidPositionException {
-		int profundidad = 0;
-		TNodo<E> nodo = this.checkPosition(v);
-		if( this.isRoot(v) ) {
-			profundidad = 0;
-		} else {
-			profundidad = 1 + this.depth(nodo.getPadre());
-		}
-		return profundidad;
-	}
-	
 	
 	/**
 	 * Verifica si un nodo pertenece al arbol
@@ -627,20 +595,6 @@ public class ArbolGeneral <E> implements Tree <E> {
 		if( this.raiz == null) {
 			pertenece = false;
 		} else {
-//			Iterable<Position<E>> positions = this.positions();
-//			Iterator<Position<E>> it = positions.iterator();
-//			Position<E> posActual = it.hasNext() ? it.next() : null;
-//			TNodo<E> nodoActual = null;
-//			while( posActual != null && !pertenece) {
-//				try {
-//					nodoActual = this.checkPosition(posActual);
-//				} catch (InvalidPositionException e) {}
-//				if( nodoActual.equals(p)) {
-//					pertenece = true;
-//				} else {
-//					posActual = it.hasNext() ? it.next() : null;
-//				}
-//			}
 			
 			Iterator<E> it = this.iterator();
 			E elementActual = it.hasNext() ? it.next() : null;

@@ -5,9 +5,9 @@ import TDALista.Position;
 import TDALista.PositionList;
 
 public class TNodo <E> implements Position <E> {
-	protected E element;
-	protected TNodo<E> ancestor;
-	protected PositionList<TNodo<E>> descendant;
+	private E element;
+	private TNodo<E> ancestor;
+	private PositionList<TNodo<E>> descendant;
 	
 	public TNodo(E element, TNodo<E> ancestor) {
 		this.element = element;
