@@ -469,30 +469,30 @@ public class ArbolGeneral <E> implements Tree <E> {
 	 */
 	public void removeNode (Position<E> p) throws InvalidPositionException {
 		TNodo<E> nodo = this.checkPosition(p);
-		
+		// Si no hay raiz, lanza una excepción.
 		if( this.raiz == null ) {
 			throw new InvalidPositionException("Arbol vacio");
 		}
-		
+		//Si el nodo a eliminar es la raiz, ...
 		if( this.raiz == nodo ) {
-			
+			//... entonces si la raiz no tiene hijos, ...
 			if( this.raiz.getHijos().isEmpty()) {
-				this.raiz = null;
-	
-			} else if( this.raiz.getHijos().size() == 1) {
+				//... entonces borro la raiz
+				this.raiz = null; 
+			} else if( this.raiz.getHijos().size() == 1) {// ... de lo contrario, si la raiz tiene un hijo, ...
+				//... entonces hacer que el hijo pase a ser la raiz del arbol
 				try {
 					TNodo<E> nuevaRaiz = this.raiz.getHijos().remove(this.raiz.getHijos().first());
 					nuevaRaiz.setPadre(null);
 					this.raiz = nuevaRaiz;
-				} catch (EmptyListException e) {
-					System.out.println("Algo malo paso");
-				}
+				} catch (EmptyListException e) {System.out.println("Algo malo paso");}
 				
 			} else {
+				//... de lo contrario, lanza una excepcion
 				throw new InvalidPositionException("La raiz no tiene un unico descendiente");
 			}
 		} else {
-			
+			//... de lo contrario
 			TNodo<E> ancester = nodo.getPadre();
 			PositionList<TNodo<E>> listDescentansOfAncester = ancester.getHijos();
 			Position<TNodo<E>> posOfNodo;
